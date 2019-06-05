@@ -1,4 +1,10 @@
-class Test{
+class Timeline{
+    constructor() {
+        this._tlist = [];
+    }
+}
+
+class Timer{
     constructor(name = 'default') {
         this.name = name;
     }
@@ -7,19 +13,3 @@ class Test{
     }
 }
 
-Timer = {
-    _init : function(){
-        t = {};
-        t.test = 1;
-        return t;
-    },
-    print : function(t){
-        print(t.test);
-    },
-}
-
-a = Timer._init();
-Timer.print(a);
-
-c = new Test('test');
-c.print()
