@@ -1,0 +1,4 @@
+class Ctx{
+    constructor() {
+    }
+}

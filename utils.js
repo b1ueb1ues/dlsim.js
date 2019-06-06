@@ -1,14 +1,15 @@
-utils = {
+var ctx = {};
 
+utils = {
     print : function(line){
         document.body.innerText += line+'\n';
     },
 
-    print2 : function(line){
-        document.body.innerText += line ;
+    dprint: function(line){
+        document.body.innerText += line+'\n';
+        console.log(line);
     },
-
 }
 
 print = utils.print
-print2 = utils.print2
+dprint = utils.dprint
