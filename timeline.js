@@ -11,7 +11,7 @@ function now() {
     return ctx.active_tl._now;
 }
 
-class Timeline{
+class Timeline {
     constructor() {
         this._tlist = [];
         this._now = 0;
@@ -75,7 +75,7 @@ class Timeline{
     }
 }
 
-class Timer{
+class Timer {
     constructor(cb, timeout, repeat, timeline) {
         if (cb) {
             this._callback = cb; }
@@ -164,4 +164,4 @@ function test() {
     tl.run();
     dprint('done');
 }
-test();
+//test();
