@@ -87,6 +87,7 @@ class Timer {
         }
 
         if (repeat) {
+            this.repeat = repeat;
             this.callback = this.callback_repeat; }
         else {
             this.callback = this.callback_once; }
@@ -140,7 +141,7 @@ class Timer {
     callback_repeat(){
         this._callback(this);
         if (this.timing == now()) {
-            this.timing += this.timeout; }
+            this.timing += this.repeat; }
         return 0;
     }
 
