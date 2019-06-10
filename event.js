@@ -97,21 +97,21 @@ class Listener {
 }
 
 function test() {
-    function foo() {
-        print('foo'); 
+    function foo(e) {
+        print('foo: '+e.name); 
+        print(': '+e.test); 
     }
-    function bar() {
-        print('bar'); 
+    function bar(e) {
+        print('bar: '+e.name); 
     }
 
     new Event().init();
-    a = new Listener('test', foo);
-    b = new Listener(['test','test2'], bar);
-    new Event('test').on();
-    new Event('test2').on();
-    a.off();
-    new Event('test').on();
-    a.on();
-    new Event('test').on();
+    e = new Event('test');
+    e.test = 1;
+    l = new Listener('test', foo);
+    l2 = new Listener(['test2','test'], bar);
+    e2 = new Event('test2');
+    e.on();
+    e2.on();
 }
-test();
+//test();

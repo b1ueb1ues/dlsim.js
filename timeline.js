@@ -100,6 +100,12 @@ class Timer {
         this.online = 0;
     }
 
+    init() {
+        this.timeline = new Timeline();
+        this.timeline.on();
+        return this.timeline;
+    }
+
     on(timeout){
         if (timeout) {
             this.timeout = timeout;
@@ -154,12 +160,11 @@ function test() {
     function foo() {
         dprint('foo: '+now());
     }
-    tl = new Timeline().on();
+    tl = new Timer().init();
     var t = new Timer(foo, 2);
     t.on();
     var t2 = new Timer(0,10,1);
     t2.on();
-    dprint(tl);
 
     tl.run();
     dprint('done');

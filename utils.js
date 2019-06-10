@@ -1,4 +1,3 @@
-var ctx = {};
 
 utils = {
     print : function(line){

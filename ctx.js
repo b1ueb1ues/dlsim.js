@@ -1,4 +1,6 @@
-class Ctx{
-    constructor() {
-    }
-}
+//class Ctx{
+//    constructor() {
+//    }
+//}
+
+var ctx = {};

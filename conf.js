@@ -1,65 +1,42 @@
-function type(a){
-    return a.__proto__.constructor.name;
-}
 
 class Conf {
-    constructor(template) {
-        this.__parentname = 0;
-        this.__name = 0;
-        this.__sync = 0;
-        var ttype ;
-        if (template) {
-            ttype = type(template);
-        }
-        if (ttype == 'Map') {
-            this.__frommap(template); }
-        else if (ttype == 'Conf'){
-        }
+    constructor() {
     }
 
-    __frommap(t){
-        if (type(t) != 'Map'){
-            dprint('err frommap');
-            errrrrrrrrrrrrr(); }
-
-        for (var [k,v] of t) {
-            if (type(v) == 'Map'){
-                var tmp = new Conf();
-                tmp.__frommap(v);
-                this[k] = tmp;
-            }
-            else{
-                this[k] = v; }
-        }
-    }
-
-    __tomap(){
-        var ret = new Map();
-        for (var k in this) {
-            dprint(k);
-            if (type(this[k]) == 'Map'){
-                ret[k] = ['__realmap',v];
-            }
-        }
+    sync() {
+        for (var i in this) {
+            if (typeof this[i] == 'function') {
+                print(i);
+                this[i](this); } }
     }
 }
 
 function test() {
-    a = new Map();
-    b = new Map();
-    d = new Map();
-    d.test = 1;
-    d['test2'] = 2;
-    d.set('test3',3);
-    dprint(d);
-    return;
-    b.set('testb','b');
-    a.set('test',1);
-    a.set('test2',2);
-    a.set('test3',b);
-    c = new Conf(a);
-    dprint(c);
-    c.m = b
-    c.__tomap();
+    function foob(c) {
+        print('foob: ' + c);
+        print('foob: ' + c.c);
+    }
+    function food(c) {
+        print('food: ' + c);
+    }
+    function fooe(c) {
+        print('fooe: ' + c);
+    }
+    function foo1(c) {
+        print('foo1: ' + c.d);
+        print('foo1: ' + c.e);
+    }
+    a = new Conf();
+    a.b = new Conf();
+    a.b.c = 3;
+    a.d = 4;
+    a.e = 5;
+    a.foo = foo1;
+    a.b.foo = foob;
+    a.d = 44;
+    a.e = 55;
+    a.b.c = 33;
+    a.sync();
+    a.b.sync();
 }
-test()
+//test();
