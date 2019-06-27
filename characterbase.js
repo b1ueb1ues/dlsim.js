@@ -4,18 +4,6 @@
 //    document.head.appendChild(script); 
 //}
 
-function include(url) {
-    const fs = require('fs');
-    fs.readFile(url, 'utf-8', (err, data) => {
-        if(err) { throw err; }
-        eval(data);
-        console.log('data: ', data);
-    });
-}
-
-include('./test.js');
-include('./log.js');
-
 class Characterbase {
     constructor() {
         this.base_atk = 3000;

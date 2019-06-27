@@ -4,3 +4,4 @@
 //}
 
 var ctx = {};
+ctx.test = 1;
