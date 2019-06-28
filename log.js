@@ -1,21 +1,26 @@
-
 var loglevel = 0;
-
-function loginit(log){
-    if (log) {
-        ctx.active_log = log;
-        return 1; }
-    else {
-        ctx.active_log = [];
-        return ctx.active_log; }
-}
 
 function log(t, name, amount, misc) {
     ctx.active_log.push([now(), t, name, amount, misc]);
 }
 
-var Log = {
-    catline: function(i) {
+class Log {
+    constructor() {
+    }
+    init(log) {
+        if (log) {
+            ctx.active_log = log;
+            this.active = ctx.active_log;
+            return 1; }
+        else {
+            ctx.active_log = [];
+            this.active = ctx.active_log;
+            return ctx.active_log; }
+    }
+    catline(i) {
+        if (!i) {
+            i = this.active;
+        }
         var j = [];
         j[1] = i[1];
         j[2] = i[2];
@@ -46,21 +51,26 @@ var Log = {
     }
 }
 
+
 function logcat(filter, log) {
     if (!log) {
         log = ctx.active_log; }
+    l = new Log();
 
 
     if (!filter) {
         for (var i in log) {
-            Log.catline(log[i]);
+            l.catline(log[i]);
         } 
     } 
     else {
+        if (typeof filter == 'string'){
+            filter = [filter];
+        }
         for (var i in log) {
             for (var j in filter) {
                 if (log[i][1] == filter[j]) {
-                    Log.catline(log[i]); } } } }
+                    l.catline(log[i]); } } } }
 }
 
 function logget() {

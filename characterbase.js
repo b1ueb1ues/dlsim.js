@@ -48,7 +48,7 @@ class Characterbase {
 
 function test(){
     ctx = {};
-    loginit();
+    new Log().init();
     new Timer().init();
     new Event().init();
     
@@ -56,12 +56,13 @@ function test(){
     
     function foo(){
         c.dmg_make('x',1,'s');
+        log('debug');
     }
     
     new Timer(foo,0,2).on();
     
     ctx.active_tl.run(100);
     
-    logcat();
+    logcat(['dmg','debug']);
 }
 test();

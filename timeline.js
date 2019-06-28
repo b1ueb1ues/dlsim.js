@@ -1,12 +1,3 @@
-if (typeof require != 'undefined') {
-    console.log('nodejs');
-    var utils = require('./nodeutils.js');
-    ctx = utils.ctx;
-    print = utils.print;
-    dprint = utils.dprint;
-}
-
-
 function now() {
     return ctx.active_tl._now;
 }
@@ -171,3 +162,4 @@ function test() {
     dprint('done');
 }
 //test();
+
