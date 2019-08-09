@@ -17,9 +17,15 @@ class Log {
             this.active = ctx.active_log;
             return ctx.active_log; }
     }
+    log(log) {
+        if (!log) {
+            log = this.active;
+        }
+        log.push([now(), t, name, amount, misc]);
+    }
     catline(i) {
         if (!i) {
-            i = this.active;
+            i = this.active[0];
         }
         var j = [];
         j[1] = i[1];
@@ -70,7 +76,9 @@ function logcat(filter, log) {
         for (var i in log) {
             for (var j in filter) {
                 if (log[i][1] == filter[j]) {
-                    l.catline(log[i]); } } } }
+                    l.catline(log[i]); } } 
+        } 
+    }
 }
 
 function logget() {
@@ -80,3 +88,4 @@ function logget() {
 function logreset() {
     ctx.active_log = [];
 }
+

@@ -46,23 +46,23 @@ class Characterbase {
 }
 
 
-function test(){
+function test_characterbase(){
     ctx = {};
+    new Characterbase();
     new Log().init();
     new Timer().init();
     new Event().init();
     
     var c = new Characterbase();
     
-    function foo(){
-        c.dmg_make('x',1,'s');
-        log('debug');
-    }
-    
-    new Timer(foo,0,2).on();
+     function foo(){
+         c.dmg_make('x',1,'s');
+     }
+     
+     new Timer(foo,0,2).on();
     
     ctx.active_tl.run(100);
     
     logcat(['dmg','debug']);
 }
-test();
+//test_characterbase();

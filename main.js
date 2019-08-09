@@ -1,4 +1,4 @@
-var debug = 1;
+var debug = 0;
 
 var include = [
     'utils.js',
@@ -37,11 +37,16 @@ function loadScript(url, callback)
 }
 
 if (typeof require != 'undefined') {
-    console.log('nodejs');
+    if (debug) console.log('nodejs');
     const fs = require('fs');
-    for (var i in include) {
-        eval(fs.readFileSync(include[i])+'')
+    var js = '';
+    var nodejs = true;
+
+    for (i=0;i<len;i++) {
+        if (debug) console.log(include[i]);
+        js += fs.readFileSync(include[i])+'';
     }
+    eval(js);
 } else { // browser
     loadScript(include[i], loadNext);
 }

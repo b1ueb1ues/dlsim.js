@@ -1,14 +1,17 @@
-
-utils = {
-    print : function(line){
+if (!nodejs) {
+    function print(line) {
         document.body.innerText += line+'\n';
-    },
-
-    dprint: function(line){
+    }
+    function dprint(line) {
         document.body.innerText += line+'\n';
         console.log(line);
-    },
-}
+    }
+} else {
+    function print(line) {
+        console.log(line);
+    }
 
-print = utils.print
-dprint = utils.dprint
+    function dprint(line){
+        console.log(line);
+    }
+}

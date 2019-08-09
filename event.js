@@ -96,7 +96,7 @@ class Listener {
     }
 }
 
-function test() {
+function teste() {
     function foo(e) {
         print('foo: '+e.name); 
         print(': '+e.test); 
@@ -114,4 +114,4 @@ function test() {
     e.on();
     e2.on();
 }
-//test();
+teste();
