@@ -1,6 +1,5 @@
 if (typeof document == 'undefined') {
     var nodejs = true;
-    console.log('node');
     var print = function(line){
         console.log(line);
     }

@@ -1,6 +1,5 @@
-import {print, dprint} from './print.js'
+import {ctx, print, dprint} from './ctx.js'
 
-let ctx = {};
 export function now() {
     return ctx.timeline._now;
 }
@@ -14,7 +13,7 @@ export function timer(...args){
 }
 
 class Timeline {
-    constructor() {
+    constructor(ctx) {
         this._tlist = [];
         this._now = 0;
     }
@@ -50,14 +49,16 @@ class Timeline {
 
     process_head() {
         let tcount = this._tlist.length;
+        let headtiming = 0;
+        let headindex = 0;
         if (tcount == 0) {
             return -1; }
         if (tcount == 1) {
-            let headtiming = this._tlist[0].timing;
-            let headindex = 0; }
+            headtiming = this._tlist[0].timing;
+            headindex = 0; }
         else { // if tcount >= 2
-            let headtiming = this._tlist[0].timing;
-            let headindex = 0;
+            headtiming = this._tlist[0].timing;
+            headindex = 0;
             for (var i=1; i < tcount; i++) {
                 let timing = this._tlist[i].timing;
                 if (timing < headtiming) {
@@ -83,7 +84,6 @@ export class Timer {
             this._callback = cb; }
         this.timeout = 0;
         this.online = 0;
-        this.timeline = ctx.timeline;
     }
 
     static init() {
@@ -101,7 +101,7 @@ export class Timer {
 
         if (this.online == 0) {
             this.online = 1;
-            this.timeline.add(this); }
+            ctx.timeline.add(this); }
 
         return this;
     }
@@ -109,7 +109,7 @@ export class Timer {
     off() {
         if (this.online) {
             this.online = 0;
-            this.timeline.rm(this); }
+            ctx.timeline.rm(this); }
 
         return this;
     }
@@ -131,26 +131,4 @@ export class Timer {
         dprint('default callback: '+t);
     }
 }
-
-function foo(){
-    dprint('foo1'+t);
-}
-function foo2(t){
-    dprint('foo2'+t);
-    t.on();
-}
-
-
-function test_timeline() {
-    let tl = Timer.init();
-    var t = new Timer(foo);
-    var t2 = new Timer(foo2);
-    t.on(0.2);
-    t2.on();
-
-    tl.run();
-    dprint('done');
-}
-test_timeline();
-
 

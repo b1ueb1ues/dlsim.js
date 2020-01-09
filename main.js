@@ -1,32 +1,21 @@
 //import {Timer, print, dprint, now} from './ctx.js'
 //import * as ctx from './ctx.js'
-import * as tl from './timeline.js'
+import {print, dprint, Timer, Ctx} from './core/ctx.js'
+import * as ctx from './core/ctx.js'
 
 
-
-
-function main(){
-    let t = ['0','1','2','3'];
-    let c = t.splice(1,1);
-    console.log(t);
-    console.log(c);
+function foo(t){
+    //print('foo@'+ctx.now());
+    t.on();
 }
 
+function main(){
+    let c1 = new Ctx();
+    new Timer(foo).on(0.1);
+    ctx.run();
+}
+
+console.time('main');
 main();
+console.timeEnd('main');
 
-
-//function test_timeline() {
-//    function foo() {
-//        dprint('foo: '+now());
-//    }
-//    Timer.init()
-//    var t = new Timer(foo, 0.2);
-//    t.on();
-//    var t2 = new Timer(0,10,0.2);
-//    t2.on();
-//
-//    ctx.run();
-//    dprint('done');
-//}
-//test_timeline();
-//
