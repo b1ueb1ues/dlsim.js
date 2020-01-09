@@ -5,7 +5,7 @@ import * as ctx from './core/ctx.js'
 
 
 function foo(t){
-    //print('foo@'+ctx.now());
+    print('foo@'+ctx.now());
     t.on();
 }
 
