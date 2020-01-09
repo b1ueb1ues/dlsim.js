@@ -1,52 +1,32 @@
-var debug = 0;
+//import {Timer, print, dprint, now} from './ctx.js'
+//import * as ctx from './ctx.js'
+import * as tl from './timeline.js'
 
-var include = [
-    'utils.js',
-    'ctx.js',
-    'event.js',
-    'timeline.js',
-    'log.js',
-    'characterbase.js',
-    '__END__'
-]
 
-var i = 0;
-var len = include.length-1;
 
-function loadNext(){
-    i += 1;
-    if (i >= len)return;
-    loadScript(include[i], loadNext);
+
+function main(){
+    let t = ['0','1','2','3'];
+    let c = t.splice(1,1);
+    console.log(t);
+    console.log(c);
 }
 
-function loadScript(url, callback)
-{
-    // Adding the script tag to the head as suggested before
-    var head = document.head;
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = url;
+main();
 
-    // Then bind the event to the callback function.
-    // There are several events for cross browser compatibility.
-    script.onreadystatechange = callback;
-    script.onload = callback;
 
-    // Fire the loading
-    head.appendChild(script);
-}
-
-if (typeof require != 'undefined') {
-    if (debug) console.log('nodejs');
-    const fs = require('fs');
-    var js = '';
-    var nodejs = true;
-
-    for (i=0;i<len;i++) {
-        if (debug) console.log(include[i]);
-        js += fs.readFileSync(include[i])+'';
-    }
-    eval(js);
-} else { // browser
-    loadScript(include[i], loadNext);
-}
+//function test_timeline() {
+//    function foo() {
+//        dprint('foo: '+now());
+//    }
+//    Timer.init()
+//    var t = new Timer(foo, 0.2);
+//    t.on();
+//    var t2 = new Timer(0,10,0.2);
+//    t2.on();
+//
+//    ctx.run();
+//    dprint('done');
+//}
+//test_timeline();
+//

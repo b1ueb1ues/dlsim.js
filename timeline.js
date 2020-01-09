@@ -1,12 +1,22 @@
-function now() {
-    return ctx.active_tl._now;
+import {print, dprint} from './print.js'
+
+let ctx = {};
+export function now() {
+    return ctx.timeline._now;
+}
+
+export function run() {
+    ctx.timeline.run();
+}
+
+export function timer(...args){
+    return new Timer(...args);
 }
 
 class Timeline {
     constructor() {
         this._tlist = [];
         this._now = 0;
-        //this.on();
     }
 
     print() {
@@ -19,86 +29,70 @@ class Timeline {
 
     rm(t) {
         var i = this._tlist.indexOf(t);
-        return this._tlist.pop(i);
+        return this._tlist.splice(i);
     }
 
     on() {
-        ctx.active_tl = this;
+        ctx.timeline = this;
         return this;
     }
 
-    run(duration=180){
+    run(duration=180) {
         this.on();
         duration += this._now;
         while(1){
-            if (this._now > duration) {
-                return; }
-            if (this.process_head() == -1){
-                return; } }
+            if (this._now > duration)
+                return;
+            if (this.process_head() == -1)
+                return;
+        }
     }
 
-    process_head(){
-        var tcount = this._tlist.length;
+    process_head() {
+        let tcount = this._tlist.length;
         if (tcount == 0) {
             return -1; }
         if (tcount == 1) {
-            var headtiming = this._tlist[0].timing;
-            var headindex = 0; }
+            let headtiming = this._tlist[0].timing;
+            let headindex = 0; }
         else { // if tcount >= 2
-            var headtiming = this._tlist[0].timing;
-            var headindex = 0;
+            let headtiming = this._tlist[0].timing;
+            let headindex = 0;
             for (var i=1; i < tcount; i++) {
-                var timing = this._tlist[i].timing;
+                let timing = this._tlist[i].timing;
                 if (timing < headtiming) {
                     headtiming = timing;
                     headindex = i; } } }
 
         if (headtiming >= this._now) {
             this._now = headtiming;
-            var headt = this._tlist[headindex];
-            var suc = headt.callback(); 
+            let headt = this._tlist[headindex];
+            let suc = headt.callback(); 
             if (suc) {
                 this._tlist.splice(headindex,1); } }
-        else{
+        else {
             dprint('timeline time err');
             errrrrrrrrr(); }
         return 0;
     }
 }
 
-class Timer {
-    constructor(cb, timeout, repeat, timeline) {
+export class Timer {
+    constructor(cb) {
         if (cb) {
             this._callback = cb; }
-
-        if (timeout) {
-            this.timeout = timeout; }
-        else {
-            this.timeout = 0;
-        }
-
-        if (repeat) {
-            this.repeat = repeat;
-            this.callback = this.callback_repeat; }
-        else {
-            this.callback = this.callback_once; }
-
-        if (timeline) {
-            this.timeline = timeline; }
-        else {
-            this.timeline = ctx.active_tl; }
-
-        this.timing = 0;
+        this.timeout = 0;
         this.online = 0;
+        this.timeline = ctx.timeline;
     }
 
-    init() {
-        this.timeline = new Timeline();
-        this.timeline.on();
-        return this.timeline;
+    static init() {
+        let timeline = new Timeline();
+        timeline.on();
+        return timeline;
     }
 
-    on(timeout){
+    on(timeout) {
         if (timeout) {
             this.timeout = timeout;
             this.timing = now() + timeout; }
@@ -112,7 +106,7 @@ class Timer {
         return this;
     }
 
-    off(){
+    off() {
         if (this.online) {
             this.online = 0;
             this.timeline.rm(this); }
@@ -120,7 +114,7 @@ class Timer {
         return this;
     }
 
-    callback_once(){
+    callback() {
         this._callback(this);
         if (this.timing <= now()) {
             this.online = 0;
@@ -129,37 +123,34 @@ class Timer {
             return 0; }
     }
 
-    callback_repeat(){
-        this._callback(this);
-        if (this.timing == now()) {
-            this.timing += this.repeat; }
-        return 0;
-    }
-
-    toString(){
+    toString() {
         return 'timer@'+now();
     }
     
-    _callback(t){
+    _callback(t) {
         dprint('default callback: '+t);
     }
 }
 
-
-
-
-function test() {
-    function foo() {
-        dprint('foo: '+now());
-    }
-    tl = new Timer().init();
-    var t = new Timer(foo, 2);
+function foo(){
+    dprint('foo1'+t);
+}
+function foo2(t){
+    dprint('foo2'+t);
     t.on();
-    var t2 = new Timer(0,10,1);
+}
+
+
+function test_timeline() {
+    let tl = Timer.init();
+    var t = new Timer(foo);
+    var t2 = new Timer(foo2);
+    t.on(0.2);
     t2.on();
 
     tl.run();
     dprint('done');
 }
-//test();
+test_timeline();
+
 
