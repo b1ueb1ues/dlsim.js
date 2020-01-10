@@ -71,13 +71,4 @@ class EventL {
             return this._event_listeners[eventname]; }
     }
 }
-function foo(e){
-    console.log('foo', e);
-}
-let t = {};
-t.el = new EventL();
-t.Event = t.el.Event;
 
-t.e = t.Event('ename');
-t.l = t.Event('ename').listener(foo);
-t.e.on()

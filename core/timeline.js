@@ -1,19 +1,6 @@
-import {ctx, print, dprint} from './ctx.js'
 
-export function now() {
-    return ctx.timeline._now;
-}
-
-export function run() {
-    ctx.timeline.run();
-}
-
-export function timer(...args){
-    return new Timer(...args);
-}
-
-class Timeline {
-    constructor(ctx) {
+export class _Timeline {
+    constructor() {
         this._tlist = [];
         this._now = 0;
     }
@@ -31,13 +18,7 @@ class Timeline {
         return this._tlist.splice(i);
     }
 
-    on() {
-        ctx.timeline = this;
-        return this;
-    }
-
     run(duration=180) {
-        this.on();
         duration += this._now;
         while(1){
             if (this._now > duration)
@@ -78,8 +59,9 @@ class Timeline {
     }
 }
 
-export class Timer {
-    constructor(cb) {
+export class _Timer {
+    constructor(tl, cb) {
+        this.timeline = tl;
         if (cb) {
             this._callback = cb; }
         this.timeout = 0;
@@ -95,13 +77,13 @@ export class Timer {
     on(timeout) {
         if (timeout) {
             this.timeout = timeout;
-            this.timing = now() + timeout; }
+            this.timing = this.timeline._now + timeout; }
         else {
-            this.timing = now() + this.timeout; }
+            this.timing = this.timeline._now + this.timeout; }
 
         if (this.online == 0) {
             this.online = 1;
-            ctx.timeline.add(this); }
+            this.timeline.add(this); }
 
         return this;
     }
@@ -109,14 +91,14 @@ export class Timer {
     off() {
         if (this.online) {
             this.online = 0;
-            ctx.timeline.rm(this); }
+            this.timeline.rm(this); }
 
         return this;
     }
 
     callback() {
         this._callback(this);
-        if (this.timing <= now()) {
+        if (this.timing <= this.timeline._now) {
             this.online = 0;
             return 1; }
         else{
@@ -124,7 +106,7 @@ export class Timer {
     }
 
     toString() {
-        return 'timer@'+now();
+        return 'timer@'+this.timeline._now;
     }
     
     _callback(t) {
