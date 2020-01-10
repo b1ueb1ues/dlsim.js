@@ -1,46 +1,62 @@
 
-class ParamBase {
-    constructor(){
-        this.params = {};
-        this.cache = {};
-        let pb = this;
-        this.Param = function(bracket) {
-            let p = new _Param(pb, bracket);
-            if (bracket in pb.params) {
-                pms[bracket].push(p);
-            } else {
-                pms[bracket] = [p];
-            }
-            return p;
-
+class Param {
+    constructor(ctx, name) {
+        this.ctx = ctx;
+        this.name = name;
+        this.value = 0;
+        if (name){  // setter
+            ctx.params[name].push(this);
+        } else {   // getter
+            this.d_cache = ctx.cache;
+            this.d_l_params = ctx.params;
         }
     }
-}
-
-class _Param {
-    constructor(pb, bracket) {
-        this.pb = pb;
-        this.bracket = bracket;
-        this.value = 0;
+    static init(register) {
+        let ctx = {params:{}, cache:{}};
+        for (var i in register) {
+            ctx.params[register[i]] = [];
+            ctx.cache[register[i]] = null;
+        }
+        function new_param(name) {
+            return new Param(ctx, name);
+        }
+        return new_param;
     }
-}
-
-class A {
-    constructor(a){
-        this.a = a;
+    set(v) {
+        this.value = v;
+        this.ctx.cache[this.name] = null;
+        return this;
     }
-}
-let o = [];
-let a = new A('2');
-let b = new A();
-o.push(a);
-o.push(b);
-
-console.log(o);
-for (var i in o){
-    console.log('-',o[i]);
-    if (o[i] == a) {
-        console.log('=');
+    get(name) {
+        let cache = this.d_cache[name];
+        if (cache != null) {
+            return cache;
+        }
+        else {
+            let p = this.d_l_params[name];
+            cache = 0;
+            for (var i in p){
+                cache += p[i].value;
+            }
+            this.ctx.cache[name] = cache;
+            return cache;
+        }
     }
+/**
+ * manual inline
+ *
+    _get(name) {
+        let p = this.ctx.params[name];
+        let cache = 0;
+        for (var i in p){
+            cache += p[i].value;
+        }
+        this.ctx.cache[name] = cache;
+        return cache;
+    }
+    if (cache[name])
+        return cache[name];
+    else
+        return p._get();
+*/
 }
-
