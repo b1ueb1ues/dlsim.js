@@ -42,6 +42,7 @@ class Param {
             return cache;
         }
     }
+}
 /**
  * manual inline
  *
@@ -59,4 +60,3 @@ class Param {
     else
         return p._get();
 */
-}

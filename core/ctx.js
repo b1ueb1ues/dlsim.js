@@ -29,8 +29,8 @@ export function now() {
     return active_ctx.timeline._now;
 }
 
-export function run() {
-    return active_ctx.timeline.run();
+export function run(t) {
+    return active_ctx.timeline.run(t);
 }
 
 

@@ -9,14 +9,14 @@ export class _Timeline {
         print(this.name);
     }
 
-    add(t) {
-        this._tlist.push(t);
-    }
+    //add(t) {
+    //    this._tlist.push(t);
+    //}
 
-    rm(t) {
-        var i = this._tlist.indexOf(t);
-        return this._tlist.splice(i);
-    }
+    //rm(t) {
+    //    var i = this._tlist.indexOf(t);
+    //    return this._tlist.splice(i);
+    //}
 
     run(duration=180) {
         duration += this._now;
@@ -83,7 +83,8 @@ export class _Timer {
 
         if (this.online == 0) {
             this.online = 1;
-            this.timeline.add(this); }
+            this.timeline._tlist.push(this);
+        }
 
         return this;
     }
@@ -91,8 +92,10 @@ export class _Timer {
     off() {
         if (this.online) {
             this.online = 0;
-            this.timeline.rm(this); }
-
+            let tlist = this.timeline._tlist;
+            let i = tlist.indexOf(this);
+            tlist.splice(i);
+        }
         return this;
     }
 
