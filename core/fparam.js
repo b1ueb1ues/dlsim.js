@@ -1,5 +1,5 @@
 
-class Param {
+export class Param {
     constructor(ctx, name) {
         this.ctx = ctx;
         this.name = name;

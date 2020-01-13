@@ -1,4 +1,3 @@
-//import {dprint, print} from './print.js';
 import {_Timeline, _Timer} from './timeline.js';
 export * from './print.js';
 export * from './event.js';

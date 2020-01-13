@@ -1,6 +1,15 @@
 
-class Conf {
+export class Conf {
     constructor() {
+    }
+
+    static default(c, d) {
+        for (var i in d) {
+            if (i in c) {}
+            else {
+                c[i] = d[i];
+            }
+        }
     }
 
     static sync(c) {
