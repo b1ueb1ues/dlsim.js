@@ -1,4 +1,7 @@
 
+function type(a){
+    return a.__proto__.constructor.name;
+}
 export class Param {
     constructor(ctx, name) {
         this.ctx = ctx;
@@ -11,8 +14,13 @@ export class Param {
             this.d_l_params = ctx.params;
         }
     }
+
     static init(register) {
-        let ctx = {params:{}, cache:{}};
+        let ctx = {params:{}, cache:{}, dirty:1};
+        if (typeof register != 'object') {
+            console.error('register type err');
+            errrrrrrrrr();
+        }
         for (var i in register) {
             ctx.params[register[i]] = [];
             ctx.cache[register[i]] = null;
@@ -25,6 +33,7 @@ export class Param {
     set(v) {
         this.value = v;
         this.ctx.cache[this.name] = null;
+        this.ctx.dirty = 1;
         return this;
     }
     get(name) {
@@ -34,7 +43,7 @@ export class Param {
         }
         else {
             let p = this.d_l_params[name];
-            cache = 0;
+            cache = null;
             for (var i in p){
                 cache += p[i].value;
             }

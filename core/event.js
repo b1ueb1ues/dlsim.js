@@ -10,6 +10,12 @@ export class Event {
             event_listeners[name] = this._trigger;
         }
     }
+    set(args) {
+        for (var i in args) {
+            this[i] = args[i];
+        }
+        return this;
+    }
     on() {
         for (var i in this._trigger){
             this._trigger[i](this);
