@@ -95,6 +95,7 @@ class Dmgcalc {
             this.e_ks.on();
             this.c_killer = this.p_src.get('killer');
         }
+        return this.c_killer;
     }
     calc_base() {
         let src, dst, ret
@@ -104,7 +105,7 @@ class Dmgcalc {
             } else {
                 ret =  this.calc_src() / this.c_dst * this.base_coef;
             }
-        } else if (this.p_src.ctx.dirty) {
+        } else if (this.p_dst.ctx.dirty) {
             ret =  this.c_src / this.calc_dst() * this.base_coef;
         } else {
             ret =  this.c_src / this.c_dst * this.base_coef;
@@ -186,9 +187,27 @@ class Hitattr {
 
 class Passive {
     constructor(src, param, value, condition) {
-        this.p = this.src.Param(param);
+        this.src = src;
+        this.param = param;
         this.value = value;
         this.condition = condition;
+        this.p = src.Param(param);
+        if (param == 'killer'){
+            let passive = this;
+            this.src.Event('killer').listener(function (e) {
+                if (passive.condition in e.ks) {
+                    passive.on();
+                } else {
+                    passive.off();
+                }
+            });
+        }
+    }
+    on() {
+        this.p.set(this.value);
+    }
+    off() {
+        this.p.set(0);
     }
 }
 
@@ -201,6 +220,7 @@ c.Event = Event.init();
 let t = {};
 t.base_def = 10;
 t.Event = Event.init();
+t.ks = {};
 
 let conf = {'type':'s'};
 c.Param = Param.init(['atk','atk_buff','atk_ex','def','cc','cd','s','fs','sp','s_buff','s_ex','killer', 'bk']);
@@ -210,4 +230,7 @@ c.Hit = Dmgcalc.init(c, t);
 c.hit = c.Hit(conf);
 console.log(c.hit);
 t.Event('killerstate').on()
+new Passive(c, 'killer', 0.3, 'burn').on();
+let k = c.hit.calc_killer();
+console.log(k);
 
