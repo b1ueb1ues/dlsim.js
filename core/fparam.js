@@ -1,7 +1,8 @@
 
-function type(a){
-    return a.__proto__.constructor.name;
-}
+//function type(a){
+//    return a.__proto__.constructor.name;
+//}
+
 export class Param {
     constructor(ctx, name) {
         this.ctx = ctx;

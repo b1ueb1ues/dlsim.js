@@ -76,46 +76,50 @@ class Dmgcalc {
 
         this.base_coef = this.ele / 0.6
     }
-    calc_src() {
-        let atk = this.src.base_atk * (1 + this.p_src.get('atk')
-                  + this.p_src.get('atk_b') + this.p_src.get('atk_ex'));
-        let crit_mod = 1 + (this.p_src.get('cc') * (this.p_src.get('cd') + 0.7));
-        this.p_src.ctx.dirty = 0;
-        this.c_src = atk * crit_mod;
-    }
-    calc_dst() {
-        let def = this.dst.base_def * (1 + this.p_dst.get('def'));
-        let dt = 1 + this.p_dst.get('dt');
-        this.p_dst.ctx.dirty = 0;
-        this.c_dst = def / dt;
-    }
-    calc_killer() {
+    calc_base() {
+        let src, dst
+        if (this.p_src.ctx.dirty) {
+            let atk = this.src.base_atk * (1 + this.p_src.get('atk')
+                      + this.p_src.get('atk_buff') + this.p_src.get('atk_ex'));
+            let crit_mod = 1 + (this.p_src.get('cc') * (this.p_src.get('cd') + 0.7));
+            src = atk * crit_mod;
+            this.c_src = src;
+            this.p_src.ctx.dirty = 0;
+        } else {
+            src = this.c_src;
+        }
+        if (this.p_dst.ctx.dirty) {
+            let def = this.dst.base_def * (1 + this.p_dst.get('def'));
+            let dt = 1 + this.p_dst.get('dt');
+            dst = def / dt;
+            this.c_dst = dst;
+            this.p_dst.ctx.dirty = 0;
+        } else {
+            dst = this.c_dst;
+        }
         if (this.c_killer == null) {
             this.e_ks.ks = this.dst.ks;
             this.e_ks.on();
             this.c_killer = this.p_src.get('killer');
         }
-        return this.c_killer;
-    }
-    calc_base() {
-        let src, dst, ret
-        if (this.p_src.ctx.dirty) {
-            if (this.p_dst.ctx.dirty) {
-                ret =  this.calc_src() / this.calc_dst() * this.base_coef;
-            } else {
-                ret =  this.calc_src() / this.c_dst * this.base_coef;
-            }
-        } else if (this.p_dst.ctx.dirty) {
-            ret =  this.c_src / this.calc_dst() * this.base_coef;
-        } else {
-            ret =  this.c_src / this.c_dst * this.base_coef;
-        }
-        return ret * this.calc_killer();
+        return src / dst * this.c_killer * this.base_coef;
     }
     calc(hitattr) {
         return this.calc_base() * hitattr.calc();
     }
 }
+1: 7
+2: eli
+3: lan
+4: ku
+5: sha
+6: luca
+7: namu
+9: mei
+10: mumu
+18: lifu
+29: meigong
+32: laxi
 
 class Hitattr {
     constructor(ctx, src, dst, conf){
@@ -195,7 +199,7 @@ class Passive {
         if (param == 'killer'){
             let passive = this;
             this.src.Event('killer').listener(function (e) {
-                if (passive.condition in e.ks) {
+                if (e.ks[passive.condition]) {
                     passive.on();
                 } else {
                     passive.off();
@@ -205,9 +209,11 @@ class Passive {
     }
     on() {
         this.p.set(this.value);
+        return this;
     }
     off() {
         this.p.set(0);
+        return this;
     }
 }
 
@@ -220,17 +226,21 @@ c.Event = Event.init();
 let t = {};
 t.base_def = 10;
 t.Event = Event.init();
-t.ks = {};
 
-let conf = {'type':'s'};
 c.Param = Param.init(['atk','atk_buff','atk_ex','def','cc','cd','s','fs','sp','s_buff','s_ex','killer', 'bk']);
 t.Param = Param.init(['def', 'dt', 'killer']);
+c.Dc = Dmgcalc.init(c, t)();
+c.Ha = Hitattr.init(c, t);
 
-c.Hit = Dmgcalc.init(c, t);
-c.hit = c.Hit(conf);
-console.log(c.hit);
-t.Event('killerstate').on()
-new Passive(c, 'killer', 0.3, 'burn').on();
-let k = c.hit.calc_killer();
-console.log(k);
+let k = new Passive(c, 'killer', 0.3, 'burn').on();
+new Passive(c, 'killer', 0.2, 'p').on();
+//t.e_ks = t.Event('killerstate').on();
+t.ks = {'p':1, 'burn':0};
+console.log( c.Dc.calc_killer() );
+t.ks = {'p':1, 'burn':1};
+t.e_ks = t.Event('killerstate').on();
+console.log( c.Dc.calc_killer() );
 
+
+let e = c.Event('test');
+console.log(e);
