@@ -1,8 +1,9 @@
 
 export class Event {
-    constructor(event_listeners, name) {
+    constructor(event_listeners, host, name) {
         this._el = event_listeners;
         this._name = name;
+        this._host = host;
         if (name in event_listeners) {
             this._trigger = event_listeners[name]; }
         else {
@@ -30,7 +31,7 @@ export class Event {
     static init() {
         let el={};
         function new_event(name) {
-            return new Event(el, name);
+            return new Event(el, this, name);
         }
         return new_event;
     }

@@ -14,36 +14,52 @@ class Dmg {
 }
 
 class Dmgcalc {
-    constructor(ctx, src, dst){
+    static init(src, dst) {
+        let dc = new Dmgcalc(src, dst);
+        let new_dmg = function (hitattr) {
+            return dc.calc(hitattr);
+        }
+        return new_dmg;
+    }
+
+    constructor(src, dst){
         this.src = src;
-        this.c_src = ctx.c_src;
+        this.c_src = null;
         this.p_src = this.src.Param();
+        this.p_src.ctx.dirty = 1;
 
         this.dst = dst;
-        this.c_dst = ctx.c_dst;
+        this.c_dst = null;
         this.p_dst = this.dst.Param();
+        this.p_dst.ctx.dirty = 1;
 
         this.c_killer = null;
-        this.e_ks = this.src.Event('killer');
+        this.e_killer = this.src.Event('killer');
 
         let dc = this;
-        this.dst.Event('killerstate').listener( function () {
+        this.l_ks = this.dst.Event('killerstate').listener( function () {
             dc.c_killer = null;
         });
 
         this.base_coef = 1.5 / 0.6 ;
     }
 
-    static init(src, dst) {
-        let ctx = {c_src:1, c_dst:1}
-        let new_dc = function () {
-            return new Dmgcalc(ctx, src, dst);
-        }
-        return new_dc;
+    tar(dst) {
+        this.dst = dst;
+        this.c_dst = null;
+        this.p_dst = this.dst.Param();
+        this.p_dst.ctx.dirty = 1;
+        this.l_ks.off();
+        let dc = this;
+        this.l_ks = this.dst.Event('killerstate').listener( function () {
+            dc.c_killer = null;
+        });
     }
+
     set_ele(v) {
         this.base_coef = v / 0.6;
     }
+
     calc_ele(src_ele, dst_ele) {
         if (src_ele == 'flame' && dst_ele == 'wind')
             this.ele = 1.5
@@ -76,6 +92,7 @@ class Dmgcalc {
 
         this.base_coef = this.ele / 0.6
     }
+
     calc_base() {
         let src, dst
         if (this.p_src.ctx.dirty) {
@@ -98,37 +115,47 @@ class Dmgcalc {
             dst = this.c_dst;
         }
         if (this.c_killer == null) {
-            this.e_ks.ks = this.dst.ks;
-            this.e_ks.on();
-            this.c_killer = this.p_src.get('killer');
+            this.e_killer.ks = this.dst.ks;
+            this.e_killer.on();
+            this.c_killer = 1 + this.p_src.get('killer');
         }
         return src / dst * this.c_killer * this.base_coef;
     }
+
     calc(hitattr) {
-        return this.calc_base() * hitattr.calc();
+        let dmg = this.calc_base();
+        let type_mod = 1;
+        if (this.p_src.ctx.dirty || hitattr.c_type == null) {
+            if (hitattr.conf.atype == 's') {
+                type_mod *= 1 + this.p_src.get('s');
+                type_mod *= 1 + this.p_src.get('s_b');
+                type_mod *= 1 + this.p_src.get('s_ex');
+            } else if (hitattr.conf.atype == 'fs') {
+                type_mod += this.p_src.get('fs');
+            }
+            hitattr.c_type = type_mod;
+        } else {
+            type_mod = hitattr.c_type;
+        }
+        let killer_mod = 1;
+        let killer = hitattr.conf.killer;
+        if (killer) {
+            for (var i in killer) {
+                if (this.dst.ks[i]) {
+                    killer_mod += killer[i];
+                }
+            }
+        }
+        dmg = dmg * type_mod * killer_mod * hitattr.conf.coef;
+        return new Dmg(this.src, dmg, hitattr.conf);
     }
 }
-1: 7
-2: eli
-3: lan
-4: ku
-5: sha
-6: luca
-7: namu
-9: mei
-10: mumu
-18: lifu
-29: meigong
-32: laxi
 
 class Hitattr {
-    constructor(ctx, src, dst, conf){
-        this.src = src;
-        this.dst = dst;
-        this.l2cache = 0;
+    constructor(conf){
+        this.c_killer = null;
+        this.c_type = null;
         this.conf = conf;
-        this.p_src = this.src.Param();
-        this.p_dst = this.dst.Param();
         let conf_default = {
              'name'    : 'default_dmg'
             ,'timing'  : [0, 0.1]
@@ -143,49 +170,18 @@ class Hitattr {
         }
         Conf.default(conf, conf_default);
     }
-    static init(src, dst) {
+    set(name, value) {
+        this.conf[name] = value;
+        if (name == 'atype')
+            this.c_type = null;
+        if (name == 'killer')
+            this.c_killer = null;
+    }
+    static init() {
         let new_hitattr = function (conf) {
-            return new Hitattr(ctx, src, dst, conf);
+            return new Hitattr(conf);
         }
         return new_hitattr;
-    }
-    calc() {
-        let base = calc_base();
-        let type_mod = 1;
-        if (this.p_src.ctx.dirty) {
-            if (this.conf.atype == 's') {
-                type_mod += this.p_src.get('s')
-                type_mod += this.p_src.get('s_b')
-                type_mod += this.p_src.get('s_ex')
-            } else if (this.conf.atype == 'fs') {
-                type_mod += this.p_src.get('fs')
-            }
-        }
-        for (var i in this.src.killer) {
-        }
-    }
-    calc_base() {
-        let src, dst
-        if (this.p_src.ctx.dirty) {
-            let atk = this.src.base_atk * (1 + this.p_src.get('atk')
-                      + this.p_src.get('atk_buff') + this.p_src.get('atk_ex'));
-            let crit_mod = 1 + (this.p_src.get('cc') * (this.p_src.get('cd') + 0.7));
-            src = atk * crit_mod;
-            this.c_src = src;
-            this.p_src.ctx.dirty = 0;
-        } else {
-            src = this.c_src;
-        }
-        if (this.p_dst.ctx.dirty) {
-            let def = this.dst.base_def * (1 + this.p_dst.get('def'));
-            let dt = 1 + this.p_dst.get('dt');
-            dst = def / dt;
-            this.c_dst = dst;
-            this.p_dst.ctx.dirty = 0;
-        } else {
-            dst = this.c_dst;
-        }
-        return src / dst * type_mod / 0.6;
     }
 }
 
@@ -217,9 +213,6 @@ class Passive {
     }
 }
 
-console.log(typeof []);
-console.log(typeof {});
-
 let c = {};
 c.base_atk = 3000;
 c.Event = Event.init();
@@ -227,20 +220,18 @@ let t = {};
 t.base_def = 10;
 t.Event = Event.init();
 
+
 c.Param = Param.init(['atk','atk_buff','atk_ex','def','cc','cd','s','fs','sp','s_buff','s_ex','killer', 'bk']);
 t.Param = Param.init(['def', 'dt', 'killer']);
-c.Dc = Dmgcalc.init(c, t)();
-c.Ha = Hitattr.init(c, t);
+c.pk = new Passive(c, 'killer', 0.5, 'burn')
+t.ks = {'paralysis':1};
+c.Dmg = Dmgcalc.init(c, t);
+c.Hit = Hitattr.init();
 
-let k = new Passive(c, 'killer', 0.3, 'burn').on();
-new Passive(c, 'killer', 0.2, 'p').on();
-//t.e_ks = t.Event('killerstate').on();
-t.ks = {'p':1, 'burn':0};
-console.log( c.Dc.calc_killer() );
-t.ks = {'p':1, 'burn':1};
-t.e_ks = t.Event('killerstate').on();
-console.log( c.Dc.calc_killer() );
+let conf = {'killer':{'paralysis':0.5, 'burn':0.5}};
 
 
-let e = c.Event('test');
-console.log(e);
+c.hit = c.Hit(conf);
+let d = c.Dmg(c.hit);
+console.log(d);
+

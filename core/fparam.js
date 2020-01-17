@@ -44,7 +44,7 @@ export class Param {
         }
         else {
             let p = this.d_l_params[name];
-            cache = null;
+            cache = 0;
             for (var i in p){
                 cache += p[i].value;
             }
