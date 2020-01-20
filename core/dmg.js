@@ -11,9 +11,14 @@ class Dmg {
         this.to_od = conf.to_od;
         this.to_bk = conf.to_bk;
     }
+    dup() {
+        return new Dmg(this.src, this.dmg, 
+            {'name':this.name, 'hits':this.hits, 
+                'to_od':this.to_od, 'to_bk':this.to_bk});
+    }
 }
 
-class Dmgcalc {
+export class Dmgcalc {
     static init(src, dst) {
         let dc = new Dmgcalc(src, dst);
         let new_dmg = function (hitattr) {
@@ -128,7 +133,7 @@ class Dmgcalc {
         if (this.p_src.ctx.dirty || hitattr.c_type == null) {
             if (hitattr.conf.atype == 's') {
                 type_mod *= 1 + this.p_src.get('s');
-                type_mod *= 1 + this.p_src.get('s_b');
+                type_mod *= 1 + this.p_src.get('s_buff');
                 type_mod *= 1 + this.p_src.get('s_ex');
             } else if (hitattr.conf.atype == 'fs') {
                 type_mod += this.p_src.get('fs');
@@ -142,7 +147,7 @@ class Dmgcalc {
         if (killer) {
             for (var i in killer) {
                 if (this.dst.ks[i]) {
-                    killer_mod += killer[i];
+                    killer_mod *= 1+killer[i];
                 }
             }
         }
@@ -151,7 +156,7 @@ class Dmgcalc {
     }
 }
 
-class Hitattr {
+export class Hitattr {
     constructor(conf){
         this.c_killer = null;
         this.c_type = null;
@@ -212,26 +217,4 @@ class Passive {
         return this;
     }
 }
-
-let c = {};
-c.base_atk = 3000;
-c.Event = Event.init();
-let t = {};
-t.base_def = 10;
-t.Event = Event.init();
-
-
-c.Param = Param.init(['atk','atk_buff','atk_ex','def','cc','cd','s','fs','sp','s_buff','s_ex','killer', 'bk']);
-t.Param = Param.init(['def', 'dt', 'killer']);
-c.pk = new Passive(c, 'killer', 0.5, 'burn')
-t.ks = {'paralysis':1};
-c.Dmg = Dmgcalc.init(c, t);
-c.Hit = Hitattr.init();
-
-let conf = {'killer':{'paralysis':0.5, 'burn':0.5}};
-
-
-c.hit = c.Hit(conf);
-let d = c.Dmg(c.hit);
-console.log(d);
 

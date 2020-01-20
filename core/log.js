@@ -3,7 +3,7 @@ import {now, print} from './ctx.js'
 let verbose = {};
 let active_log = [];
 
-function Logger(t) {
+export function Logger(t) {
     if (verbose[t]){
         function log(src='', dst='', name='', value=0, comment=''){
             active_log.push(
@@ -16,16 +16,16 @@ function Logger(t) {
     }
 }
 
-function logget() {
+export function logget() {
     return active_log;
 }
 
-function logreset() {
+export function logreset() {
     verbose = {};
     logs = [];
 }
 
-function logset(l) {
+export function logset(l) {
     if (typeof l == 'string'){
         verbose[l] = 1;
         return;
@@ -38,7 +38,7 @@ function logset(l) {
     }
 }
 
-function logcat(l) {
+export function logcat(l) {
     let data = '';
     if (!l)
         l = active_log;
@@ -50,7 +50,7 @@ function logcat(l) {
     print(data);
 }
 
-function logrm(l) {
+export function logrm(l) {
     if (typeof l == 'string'){
         delete verbose[l];
         return;
