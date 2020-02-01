@@ -7,6 +7,7 @@ export class _Ctx {
     constructor() {
         active_ctx = this;
         this.timeline = new _Timeline();
+        this.Event = Event.init();
         return;
     }
     on() {
@@ -18,6 +19,10 @@ new _Ctx();
 
 export function Ctx() {
     return new _Ctx();
+}
+
+export function Gevent(name) {
+    return active_ctx.Event(name);
 }
 
 export function Timer(cb) {

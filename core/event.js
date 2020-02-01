@@ -1,5 +1,12 @@
 
 export class Event {
+    static init() {
+        let el={};
+        function new_event(name) {
+            return new Event(el, this, name);
+        }
+        return new_event;
+    }
     constructor(event_listeners, host, name) {
         this._el = event_listeners;
         this._name = name;
@@ -27,13 +34,6 @@ export class Event {
         let l = new Listener(this._el, this._name, callback);
         l.on();
         return l;
-    }
-    static init() {
-        let el={};
-        function new_event(name) {
-            return new Event(el, this, name);
-        }
-        return new_event;
     }
 }
 

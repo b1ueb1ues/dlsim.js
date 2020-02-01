@@ -1,4 +1,5 @@
 import {Logger} from './log.js'
+import {Timer} from './ctx.js'
 
 export class Passive {
     static init(src) {
@@ -59,9 +60,20 @@ export class Passive {
 
 
 export class Buff {
-    constructor(src, dst, name, param, value, duration, group) {
+    static init(src) {
+        let ctx = {'group':{}};
+        let new_buff = function (name, param, value, duration, group) {
+            return new Buff(ctx, src, name, param, value, duration, group);
+        }
+        let dst = src;
+        new_buff.l_receiver = Event('buff').listener(function (e) {
+            return new Buff(ctx, e.src, dst, e.name, e.param, e.value, e.duration, e.group);
+        });
+        return new_buff;
+    }
+    constructor(ctx, src, name, param, value, duration, group) {
+        this.ctx = ctx;
         this.src = src;
-        this.dst = dst;
         this.name = name;
         this.param = param;
         this.value = value;
@@ -71,7 +83,10 @@ export class Buff {
         } else {
             this.group = param;
         }
+
+        this.dst = dst;
         this.p = dst.Param(param);
+
         this.log = Logger('buff');
         if (param == 'killer'){
             for (var i in value) {
@@ -88,9 +103,16 @@ export class Buff {
             });
         }
     }
+    to(dst) {
+    }
     on() {
         this.log(this.src.name, this.dst.name, 'on', this.value, this.duration)
         this.p.set(this.value);
+        let buff = this;
+        this.t_end = Timer(function () {
+            buff.on_end();
+            buff.off();
+        });
         return this;
     }
     off() {

@@ -4,18 +4,6 @@
 //}
 
 export class Param {
-    constructor(ctx, name) {
-        this.ctx = ctx;
-        this.name = name;
-        this.value = 0;
-        if (name){  // setter
-            ctx.params[name].push(this);
-        } else {   // getter
-            this.d_cache = ctx.cache;
-            this.d_l_params = ctx.params;
-        }
-    }
-
     static init(register) {
         let ctx = {params:{}, cache:{}, dirty:1};
         if (typeof register != 'object') {
@@ -30,6 +18,17 @@ export class Param {
             return new Param(ctx, name);
         }
         return new_param;
+    }
+    constructor(ctx, name) {
+        this.ctx = ctx;
+        this.name = name;
+        this.value = 0;
+        if (name){  // setter
+            ctx.params[name].push(this);
+        } else {   // getter
+            this.d_cache = ctx.cache;
+            this.d_l_params = ctx.params;
+        }
     }
     set(v) {
         this.value = v;
