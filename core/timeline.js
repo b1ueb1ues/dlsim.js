@@ -9,15 +9,6 @@ export class _Timeline {
         print(this.name);
     }
 
-    //add(t) {
-    //    this._tlist.push(t);
-    //}
-
-    //rm(t) {
-    //    var i = this._tlist.indexOf(t);
-    //    return this._tlist.splice(i);
-    //}
-
     run(duration=180) {
         duration += this._now;
         while(1){
@@ -53,8 +44,8 @@ export class _Timeline {
             if (suc) {
                 this._tlist.splice(headindex,1); } }
         else {
-            dprint('timeline time err');
-            errrrrrrrrr(); }
+            throw 'timeline time err';
+        }
         return 0;
     }
 }
@@ -66,12 +57,6 @@ export class _Timer {
             this._callback = cb; }
         this.timeout = 0;
         this.online = 0;
-    }
-
-    static init() {
-        let timeline = new Timeline();
-        timeline.on();
-        return timeline;
     }
 
     on(timeout) {
@@ -109,11 +94,11 @@ export class _Timer {
     }
 
     toString() {
-        return 'timer@'+this.timeline._now;
+        return 'timer@' + this.timeline._now;
     }
     
     _callback(t) {
-        dprint('default callback: '+t);
+        dprint('default callback: ' + t);
     }
 }
 

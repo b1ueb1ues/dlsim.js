@@ -1,20 +1,17 @@
-import {Gevent, now, print} from './ctx.js'
+import {now} from './ctx.js'
+import {print} from './print.js'
 
 let verbose = {};
 let active_log = [];
-let e_log = Gevent('log');
-e_log.log = active_log;
 
 export function Logger(t) {
     if (verbose[t]) {
         function log(src='', dst='', name='', value=0, comment='') {
             let _log = [now(), src, dst, t, name, value, comment];
             active_log.push(_log);
-            e_log.on();
         }
     } else {
         function log() {
-            e_log.on();
         }
     }
     return log;

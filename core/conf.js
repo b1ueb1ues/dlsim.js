@@ -19,9 +19,11 @@ export class Conf {
             } 
         }
     }
+
     static update(dst, src) {
         Object.assign(dst, src);
     }
+
     static clean(c) {
         for (var i in c) {
             delete c[i];

@@ -101,9 +101,9 @@ export class Dmgcalc {
     calc_base() {
         let src, dst
         if (this.p_src.ctx.dirty) {
-            let atk = this.src.base_atk * (1 + this.p_src.get('atk')
-                      + this.p_src.get('atk_buff') + this.p_src.get('atk_ex'));
-            let crit_mod = 1 + (this.p_src.get('cc') * (this.p_src.get('cd') + 0.7));
+            let atk = this.src.base_atk * (1 + this.p_src('atk')
+                      + this.p_src('atk_buff') + this.p_src('atk_ex'));
+            let crit_mod = 1 + (this.p_src('cc') * (this.p_src('cd') + 0.7));
             src = atk * crit_mod;
             this.c_src = src;
             this.p_src.ctx.dirty = 0;
@@ -111,8 +111,8 @@ export class Dmgcalc {
             src = this.c_src;
         }
         if (this.p_dst.ctx.dirty) {
-            let def = this.dst.base_def * (1 + this.p_dst.get('def'));
-            let dt = 1 + this.p_dst.get('dt');
+            let def = this.dst.base_def * (1 + this.p_dst('def'));
+            let dt = 1 + this.p_dst('dt');
             dst = def / dt;
             this.c_dst = dst;
             this.p_dst.ctx.dirty = 0;
@@ -122,7 +122,7 @@ export class Dmgcalc {
         if (this.c_killer == null) {
             this.e_killer.ks = this.dst.ks;
             this.e_killer.on();
-            this.c_killer = 1 + this.p_src.get('killer');
+            this.c_killer = 1 + this.p_src('killer');
         }
         return src / dst * this.c_killer * this.base_coef;
     }
@@ -132,11 +132,11 @@ export class Dmgcalc {
         let type_mod = 1;
         if (this.p_src.ctx.dirty || hitattr.c_type == null) {
             if (hitattr.conf.atype == 's') {
-                type_mod *= 1 + this.p_src.get('s');
-                type_mod *= 1 + this.p_src.get('s_buff');
-                type_mod *= 1 + this.p_src.get('s_ex');
+                type_mod *= 1 + this.p_src('s');
+                type_mod *= 1 + this.p_src('s_buff');
+                type_mod *= 1 + this.p_src('s_ex');
             } else if (hitattr.conf.atype == 'fs') {
-                type_mod += this.p_src.get('fs');
+                type_mod += this.p_src('fs');
             }
             hitattr.c_type = type_mod;
         } else {

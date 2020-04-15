@@ -4,18 +4,30 @@
 //}
 
 export class Param {
-    static init(register) {
+    static init() {
         let ctx = {params:{}, cache:{}, dirty:1};
-        if (typeof register != 'object') {
-            console.error('register type err');
-            errrrrrrrrr();
-        }
-        for (var i in register) {
-            ctx.params[register[i]] = [];
-            ctx.cache[register[i]] = null;
-        }
         function new_param(name) {
-            return new Param(ctx, name);
+            if (name) { // setter
+                return new Param(ctx, name);
+            } else { // getter
+                function get(name) {
+                    let cache = ctx.cache[name];
+                    if (cache != null) {
+                        return cache;
+                    }
+                    else {
+                        let p = ctx.params[name];
+                        cache = 0;
+                        for (var i in p){
+                            cache += p[i].value;
+                        }
+                        ctx.cache[name] = cache;
+                        return cache;
+                    }
+                }
+                get.ctx = ctx;
+                return get;
+            }
         }
         return new_param;
     }
@@ -23,11 +35,11 @@ export class Param {
         this.ctx = ctx;
         this.name = name;
         this.value = 0;
-        if (name){  // setter
+        if (ctx.params[name]) {
             ctx.params[name].push(this);
-        } else {   // getter
-            this.d_cache = ctx.cache;
-            this.d_l_params = ctx.params;
+        } else {
+            ctx.params[name] = [this];
+            ctx.cache[name] = null;
         }
     }
     set(v) {
@@ -35,21 +47,6 @@ export class Param {
         this.ctx.cache[this.name] = null;
         this.ctx.dirty = 1;
         return this;
-    }
-    get(name) {
-        let cache = this.d_cache[name];
-        if (cache != null) {
-            return cache;
-        }
-        else {
-            let p = this.d_l_params[name];
-            cache = 0;
-            for (var i in p){
-                cache += p[i].value;
-            }
-            this.ctx.cache[name] = cache;
-            return cache;
-        }
     }
 }
 /**

@@ -46,9 +46,7 @@ class Listener {
     }
     on() {
         if (this._online){
-            dprint('err: turn on an online listener'); 
-            errrrrrrrr();
-            return;
+            throw 'err: turn on an online listener';
         }
         if (this._name in this._el) {
             this._el[this._name].push(this._cb); }
