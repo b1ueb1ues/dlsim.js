@@ -1,22 +1,19 @@
 
 export class Action {
     static init (src) {
-        function new_action (conf) {
-            return new Action(conf);
+        function new_action (conf, data) {
+            return new Action(conf, data);
         }
         return new_action;
     }
-    constructor (conf) {
+    constructor (conf, data) {
 
     }
 }
 
-data = {"timing":1, "duration":1, "label":"test"}
-
-h1.timing
-h1.duration
-h1.label 
-
-c1.timing 
-c1.duration
-c1.atype
+let conf = {"atype":"s"};
+conf.hit = [{"timing":1, "label":"test"},
+            {"timing":1, "label":"test", "delay":[0, 0.1]},
+           ];
+conf.cancel = [{"timing":1, "duration":1, "atype":"fs"}];
+console.log(conf)
