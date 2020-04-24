@@ -55,23 +55,38 @@ export class _Timer {
         this.timeline = tl;
         if (cb) {
             this._callback = cb; }
-        this.timeout = 0;
+        this._timeout = 0;
         this.online = 0;
     }
 
     on(timeout) {
         if (timeout) {
-            this.timeout = timeout;
+            this._timeout = timeout;
             this.timing = this.timeline._now + timeout; }
         else {
-            this.timing = this.timeline._now + this.timeout; }
+            this.timing = this.timeline._now + this._timeout; }
 
         if (this.online == 0) {
             this.online = 1;
             this.timeline._tlist.push(this);
         }
-
         return this;
+    }
+
+    set timeout(timeout) {
+        if (this.online) {
+            this.timing = this.timing - this._timeout + timeout; 
+            if (this.timing < now()){
+                throw 'start_timing + timeout < now';
+            }
+            this._timeout = timeout;
+        } else {
+            this._timeout = timeout;
+        }
+    }
+
+    get timeout() {
+        return this.timing - this.timeline._now;
     }
 
     off() {
@@ -101,4 +116,3 @@ export class _Timer {
         dprint('default callback: ' + t);
     }
 }
-
