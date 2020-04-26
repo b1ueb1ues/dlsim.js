@@ -2,9 +2,20 @@ import {now, Timer} from '../core/ctx.js'
 import * as ctx from '../core/ctx.js'
 
 
-class Tick {
+
+function Tick(t, on_tick) {
+    return new _Tick(t, on_tick);
+}
+
+class _Tick {
     constructor(t, on_tick) {
-        this.t_tick = Timer(on_tick);
+        let tk = this;
+        this._next = {};
+        this._next.start_at = function(){};
+        this.t_tick = Timer(function() {
+            on_tick();
+            tk._next.start_at(tk.t, tk._speed);
+        });
         this.t = t;
     }
     start_at(inner_timing, speed=1) {
@@ -20,21 +31,10 @@ class Tick {
         this._speed = v;
         this.t_tick.on(this.pretick);
     }
+    set next(v) {
+        this._next = v;
+    }
 }
-
-function foo() {
-    console.log('!', now());
-}
-let t = new Tick(1, foo);
-Timer(function(timer) {
-    console.log('accelerate', now());
-    console.log(t);
-    t.speed = 2;
-}).on(0.25);
-t.start_at(0.5);
-ctx.run();
-
-
 
 
 export class Action {
@@ -52,64 +52,85 @@ export class Action {
         this.speed = 1;
         this.soft_next = null;
         this.hard_next = null;
+        this.tick_next = 0;
+        this.cancel = {};
 
-        this.t_end = Timer(this.on_end);
-        this.tt_timers = [[this.duration, this.t_end]];
+        this.tk_end = Tick(this.duration, this.on_end);
+        this.ticks = [this.tk_end];
 
-        this.hit(conf.hit);
-        this.buff(conf.buff);
-        this.cancel(conf.cancel);
-        this.hook(conf.hook);
+        let ts = this;
+        let tmp = this.test;
 
+        this.regist();
+        this.add_tick(conf.hit, this.on_hit);
+        //this.add_tick(conf.buff, this.on_buff);
+        //this.add_tick(conf.cancel, this.on_cancel);
+        //this.add_tick(conf.hook, this.on_hook);
+        this.regist_();
     }
-    on_tick(t) {
+
+    regist() {
+        let action = this;
+        this.on_hit = function() {
+            console.log('on_hit:', now());
+            let tk_now = action.ticks[action.tick_next];
+        }
     }
+    regist_() {
+        if (this.ticks.length >= 2) {
+            for (var i=1; i<this.ticks.length; i++) {
+                this.ticks[i-1].next = this.ticks[i];
+            }
+        }
+    }
+
+
+    on() { 
+        this.ticks[this.tick_next].start_at(0, this.ctx.speed);
+    }
+    off() { }
 
     on_end(t) {
     }
 
-    hit(parts) {
-        for (var i in parts) {
-            let t = Timer(this.on_hit);
-            t.timeout = parts[i].t;
+
+    add_tick(conf, callback) {
+        let action = this;
+        for (var i in conf) {
+            let tk = Tick(conf[i].t, callback);
             let idx = 0;
-            for (var j in this.tt_timers){
-                let tmp = this.tt_timers[j];
-                if (t.timeout < tmp.timeout){
-                    this.tt_timers.splice(idx, 0, t);
+            for (var j in this.ticks){
+                let tmp = this.ticks[j];
+                if (tk.t < tmp.t){
+                    this.ticks.splice(idx, 0, tk);
                     idx = -1;
                     break;
                 }
                 idx++;
             }
             if (idx != -1) {
-                this.tt_timers.push(t);    
+                this.ticks.push(tk);    
             }
         }
     }
-    on_hit(t) {
-    }
 
-    buff() {
+    add_buff(parts) {
     }
     on_buff(t) {
     }
 
-    cancel (parts) {
+    add_cancel(parts) {
     }
     on_cancel(t) {
     }
 
-    hook (parts) {
+    add_hook(parts) {
     }
     on_hook(t) {
     }
 
     farsee() { }
 
-    on() { }
-    off() { }
-    set() { }
 }
 
 let conf_x = {"atype":"x", "delay":0.1, "duration":3, "proc":null};
@@ -117,8 +138,9 @@ let conf_s = {"atype":"s", "delay":0.1, "duration":3, "proc":null};
 let conf_fs = {"atype":"fs", "marker":0.15, "delay":0.15, "duration":3, "proc":null};
 
 let conf = conf_x;
-conf.hit = [{"t":1, "hit":"test"},
-            {"t":1.2, "hit":"test", "delay":[0, 0.1]}
+conf.hit = [
+            {"t":1.2, "hit":"test", "delay":[0, 0.1]},
+            {"t":1, "hit":"test"},
            ];
 conf.buff = [{"t":0.15, "buff":"test" }];
 conf.cancel = [{"t":1, "cancel":"fs", "duration":1}];
@@ -128,5 +150,5 @@ conf.input = [{"t":0, "duration":3, "atype":"x"}];
 let c = {};
 c.Action = Action.init();
 let a = c.Action(conf);
-
-//console.log(a.tt_timers);
+a.on();
+ctx.run();

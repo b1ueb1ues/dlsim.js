@@ -100,7 +100,7 @@ export class _Timer {
     }
 
     callback() {
-        this._callback(this);
+        this._callback();
         if (this.timing <= this.timeline._now) {
             this.online = 0;
             return 1; }
