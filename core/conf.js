@@ -1,6 +1,13 @@
 
-export class Conf {
-    constructor() {
+export function Conf (c) {
+    return new _Conf(c);
+}
+
+class _Conf {
+    constructor(c) {
+        for (var i in c) {
+            this[i] = c[i];
+        }
     }
 
     static default(c, d) {
@@ -30,3 +37,19 @@ export class Conf {
         }
     }
 }
+
+let a = {};
+let b = {};
+a.a = 'a'
+a.o = {};
+a.o.name = 'test';
+a.o.id = 1;
+b.a = 'b'
+b.o = {};
+b.o.name = 'testb';
+console.log(a);
+
+let c = Conf(a);
+console.log(c);
+
+
