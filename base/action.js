@@ -48,7 +48,7 @@ export class Action {
     }
     constructor(ctx, conf) {
         this.ctx = ctx;
-        this.status = -1;
+        this.state = 2; // -2:input -1:marker 0:active 1:end
         this.conf = conf;
         this.atype = conf.atype;
         this.delay = conf.delay;
@@ -101,12 +101,22 @@ export class Action {
 
     on() { 
         this.firstblood = 1;
-        if (!this.ctx.active) {
-            this.ticks[this.tick_next].start_at(0, this.ctx.speed);
+        if (this.check) {
+            if (this.nospeed)
+                this.ticks[this.tick_next].start_at(0);
+            else
+                this.ticks[this.tick_next].start_at(0, this.ctx.speed);
         }
         this.ticks[this.tick_next].start_at(0, this.ctx.speed);
     }
     off() { }
+
+    pre() {
+        if (this.input) {
+
+        }
+
+    }
 
     on_end(t) {
     }
@@ -116,6 +126,9 @@ export class Action {
             return 1;
         }
         if (this.atype in this.ctx.active.cancel) {
+            return 1;
+        }
+        if (this.atype in this.ctx.active.input) {
             return 1;
         }
     }
