@@ -37,19 +37,3 @@ class _Conf {
         }
     }
 }
-
-let a = {};
-let b = {};
-a.a = 'a'
-a.o = {};
-a.o.name = 'test';
-a.o.id = 1;
-b.a = 'b'
-b.o = {};
-b.o.name = 'testb';
-console.log(a);
-
-let c = Conf(a);
-console.log(c);
-
-

@@ -49,12 +49,9 @@ export class Action {
     }
     constructor(ctx, conf) {
         this.ctx = ctx;
-        this.state = 2; // -2:input -1:marker 0:active 1:end
+        this.state = -1; // -1:pre 0:act 1:end
         this.conf = conf;
         this.atype = conf.atype;
-        this.itype = conf.itype;
-        this.delay = conf.delay;
-        this.marker = conf.marker;
         this.duration = conf.duration;
         if (conf.proc)
             this.proc = conf.proc;
@@ -63,11 +60,11 @@ export class Action {
         this.speed = 1;
         this.soft_next = null;
         this.hard_next = null;
-        this.tick_next = 0;
+
         this.cancel = null;
         this.input = null;
-        this.lock = 1;
 
+        this.tick_next_idx = 0;
         this.tk_end = Tick(this.duration, this.on_end);
         this.ticks = [this.tk_end];
 
@@ -105,15 +102,47 @@ export class Action {
         }
     }
 
-    on() { 
+    next(a_next) {
+        if (a_next.conf.input) {
+
+        }
+    }
+
+    tap() {
+        this.state = -2;
+    }
+
+
+    start_input() {  
+        if (this.atype in this.ctx.active.input) { // must have an active action
+            if this.input
+            Timer(function (){
+
+            }).on(this.input)
+
+        }
+
+    }
+    start_marker() {
+
+    }
+    
+    act() {
+        this.state = 0;
         this.hit_cur = 0;
+        if (this.nospeed)
+            this.ticks[this.tick_next_idx].start_at(0);
+        else
+            this.ticks[this.tick_next_idx].start_at(0, this.ctx.speed);
+    }
+
+    on() { 
         if (this.check) {
             if (this.nospeed)
-                this.ticks[this.tick_next].start_at(0);
+                this.ticks[this.tick_next_idx].start_at(0);
             else
-                this.ticks[this.tick_next].start_at(0, this.ctx.speed);
+                this.ticks[this.tick_next_idx].start_at(0, this.ctx.speed);
         }
-        this.ticks[this.tick_next].start_at(0, this.ctx.speed);
     }
     off() { }
 
