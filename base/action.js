@@ -17,7 +17,7 @@ class _Tick {
         this._next = {};
         this._next.start_at = function(){};
         this.t_tick = Timer(function() {
-            on_ick(tk.data);
+            on_tick(tk.data);
             tk._next.start_at(tk.t, tk._speed);
         });
         this.t = t;
@@ -45,6 +45,7 @@ export class Action {
     static init(src) {
         let nop = {};
         nop.cancel_data = {'x':1, 's':1, 'fs':1};
+        nop.input_data = {'x':1, 's':1, 'fs':1};
         let ctx = {"speed":1, "active":nop, "next":null, "t_input":null, "t_marker":null, "nop":nop};
         function new_action (conf) {
             return new Action(ctx, conf);
@@ -83,7 +84,9 @@ export class Action {
         this.add_tick(conf.buff, this.on_buff);
         this.add_tick(conf.cancel, this.on_cancel);
         this.regist_end();
-        this.hit_total = conf.hit.length;
+        if (conf.hit) {
+            this.hit_total = conf.hit.length;
+        }
         console.log('hit_total',this.hit_total);
     }
 
@@ -122,27 +125,39 @@ export class Action {
         }
         
         if (this.conf.input) {  
-            if (this.ctx.active.input_data[this.atype]){
-                let host = this;
-                this.state = -3;
-                this.ctx.t_input = Timer(function(){
-                    host.ctx.t_input = null;
-                    if (host.conf.marker) {  
-                        host.start_marker();
-                    } else {
-                        this.state = -1;
-                    }
-                }).on(this.conf.input);
-            }
+            this.start_input();
+            return;
+        }
+        if (this.conf.marker) {
+            this.start_marker();
+            return;
+        }
+    }
+
+    start_input() {
+        if (this.ctx.active.input_data[this.atype]){
+            console.log('start input');
+            this.state = -3;
+            let host = this;
+            this.ctx.t_input = Timer(function(){
+                if (host.conf.marker) {  
+                    host.start_marker();
+                } else {
+                    this.state = -1;
+                }
+                host.ctx.t_input = null;
+            }).on(this.conf.input);
         }
     }
 
     start_marker() {
-        if (this.ctx.active.input_data['marker']) {
+        if (this.ctx.active.input_data['fs']) {
+            this.state = -2;
+            let host = this;
             this.ctx.t_marker = Timer(function(){
                 this.state = -1;
-                host.ctx.t_marker = null;
                 this.on();
+                host.ctx.t_marker = null;
             }).on(this.conf.marker);
         }
     }
@@ -150,11 +165,14 @@ export class Action {
     on() { 
         if (this.ctx.active.cancel_data[this.atype]) {
             this.state = 0;
+            if (this.nospeed)
+                this.ticks[this.tick_next_idx].start_at(0);
+            else
+                this.ticks[this.tick_next_idx].start_at(0, this.ctx.speed);
         }
     }
 
     off() { }
-
 
     on_end(t) {
     }
@@ -184,22 +202,27 @@ export class Action {
 }
 
 let conf_x = {"atype":"x", "input":0.1, "duration":3, "proc":null};
-let conf_s = {"atype":"s", "input":0.1, "duration":3, "proc":null};
+let conf_s = {"atype":"s", "input":0.1, "duration":2, "proc":null};
 let conf_fs = {"atype":"fs", "input":0.15, "marker":0.15,"duration":3, "proc":null};
 
-let conf = conf_x;
-conf.hit = [
-            {"t":1.2, "hit":"test", "delay":[0, 0.1]},
-            {"t":1, "hit":"test"},
-           ];
-conf.buff = [{"t":0.15, "buff":"test" }];
-conf.cancel = [{"t":1, "cancel":"fs", "duration":1}];
-conf.hook = [{"t":2, "hook":function() {console.log('hook')} }];
-conf.input = [{"t":0, "input":"x", "duration":3}];
-conf.next = [{"t":0.2, "next":null}]
+//let conf = conf_x;
+//conf_x.hit = [
+//            {"t":1.2, "hit":"test", "delay":[0, 0.1]},
+//            {"t":1, "hit":"test"},
+//           ];
+//conf.buff = [{"t":0.15, "buff":"test" }];
+//conf.cancel = [{"t":1, "cancel":"fs", "duration":1}];
+//conf.hook = [{"t":2, "hook":function() {console.log('hook')} }];
+//conf.input = [{"t":0, "input":"x", "duration":3}];
+//conf.next = [{"t":0.2, "next":null}]
 
 let c = {};
 c.Action = Action.init();
-let a = c.Action(conf);
-a.on();
+let x = c.Action(conf_x);
+let s = c.Action(conf_s);
+let fs = c.Action(conf_fs);
+x.tap();
+Timer(function(){
+    s.tap();
+}).on(0.5);
 ctx.run();
