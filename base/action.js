@@ -12,7 +12,7 @@ function Tick(...args) {
 class _Tick {
     constructor(t, on_tick, data) {
         let tk = this;
-        console.log('on_tick',on_tick);
+        //console.log('on_tick',on_tick);
         this.data = data;
         this._next = {};
         this._next.start_at = function(){};
@@ -43,7 +43,7 @@ class _Tick {
 
 export class Action {
     static init(src) {
-        let nop = {};
+        let nop = {"data":{}};
         nop.cancel_data = {'x':1, 's':1, 'fs':1};
         nop.input_data = {'x':1, 's':1, 'fs':1};
         let ctx = {"speed":1, "active":nop, "next":null, "t_input":null, "t_marker":null, "nop":nop};
@@ -62,7 +62,6 @@ export class Action {
             this.proc = conf.proc;
         this.hit_cur = 0;
         this.hit_total = 0;
-        this.speed = 1;
         this.soft_next = null;
         this.hard_next = null;
 
@@ -78,33 +77,51 @@ export class Action {
         }
 
         this.regist_start();
-        this.add_tick(conf.input, this.on_input);
-        this.add_tick(conf.hit, this.on_hit);
-        this.add_tick(conf.hook, this.on_hook);
-        this.add_tick(conf.buff, this.on_buff);
-        this.add_tick(conf.cancel, this.on_cancel);
+        let data = conf.data;
+        this.add_tick(data.input, this.on_input);
+        this.add_tick(data.hit, this.on_hit);
+        this.add_tick(data.hook, this.on_hook);
+        this.add_tick(data.buff, this.on_buff);
+        this.add_tick(data.cancel, this.on_cancel);
         this.regist_end();
         if (conf.hit) {
-            this.hit_total = conf.hit.length;
+            this.hit_total = data.hit.length;
         }
-        console.log('hit_total',this.hit_total);
+        //console.log('hit_total',this.hit_total);
     }
 
     regist_start() {
         let action = this;
-        this.on_hit = function(conf) {
-            console.log(`${now().toFixed(3)}: hitlabel_${conf.hit}`);
+        this.on_hit = function(data) {
+            console.log(`${now().toFixed(3)}: hitlabel_${data.hit}`);
             action.hit_cur++;
         }
-        this.on_cancel = function(conf) {
-            console.log(`${now().toFixed(3)}: canceldata_${conf.cancel}`);
+        this.on_hook = function(data) {
+            data.hook();
         }
-        this.on_hook = function(conf) {
-            conf.hook();
+        this.on_buff = function(data) {
         }
-        this.on_buff = function(conf) {
+
+        this.on_cancel = function(data) {
+            console.log(`${now().toFixed(3)}: canceldata_${data.cancel}`);
+            action.cancel_data[data.cancel] = 1;
+            if (data.duration > 0) {
+                console.log('+',data.duration);
+                Timer(function(){
+                    action.cancel_data[data.cancel] = 0;
+                }).on(data.duration);
+            }
         }
-        this.on_input = function(conf) {
+
+        this.on_input = function(data) {
+            console.log(`${now().toFixed(3)}: inputdata_${data.input}`);
+            action.input_data[data.input] = 1;
+            if (data.duration > 0) {
+                console.log('+',data.duration);
+                Timer(function(){
+                    action.input_data[data.input] = 0;
+                }).on(data.duration);
+            }
         }
     }
 
@@ -118,12 +135,14 @@ export class Action {
 
     tap() {
         // must have an active action
+        if (!this.ctx.active) return; // maybe no need to check
         if (this.ctx.next) {
             return;
         } else {
             this.ctx.next = this;
         }
-        
+
+        console.log('--tap',this.conf);
         if (this.conf.input) {  
             this.start_input();
             return;
@@ -132,38 +151,58 @@ export class Action {
             this.start_marker();
             return;
         }
+        this.state = -1;
+        this.on();
     }
 
     start_input() {
         if (this.ctx.active.input_data[this.atype]){
-            console.log('start input');
+            console.log('input start', now());
             this.state = -3;
             let host = this;
             this.ctx.t_input = Timer(function(){
+                console.log('input end', now());
                 if (host.conf.marker) {  
                     host.start_marker();
                 } else {
-                    this.state = -1;
+                    host.state = -1;
+                    host.on();
                 }
                 host.ctx.t_input = null;
             }).on(this.conf.input);
+        } else {
+            console.log('cannot input', now());
         }
     }
 
     start_marker() {
         if (this.ctx.active.input_data['fs']) {
+            console.log('marker start', now());
             this.state = -2;
             let host = this;
             this.ctx.t_marker = Timer(function(){
-                this.state = -1;
-                this.on();
+                console.log('marker end', now());
+                host.state = -1;
+                host.on();
                 host.ctx.t_marker = null;
             }).on(this.conf.marker);
+        } else {
+            console.log('cannot marker', now());
         }
+    }
+    get speed() {
+        return this.ctx.speed;
+    }
+    set speed(v) {
+        this.ctx.speed = v;
     }
     
     on() { 
+        console.log('-on?', now(), this.ctx.active.cancel_data);
         if (this.ctx.active.cancel_data[this.atype]) {
+            console.log('-on!');
+            this.ctx.active = this;
+            this.ctx.next = null;
             this.state = 0;
             if (this.nospeed)
                 this.ticks[this.tick_next_idx].start_at(0);
@@ -201,9 +240,17 @@ export class Action {
     proc() { }
 }
 
-let conf_x = {"atype":"x", "input":0.1, "duration":3, "proc":null};
-let conf_s = {"atype":"s", "input":0.1, "duration":2, "proc":null};
-let conf_fs = {"atype":"fs", "input":0.15, "marker":0.15,"duration":3, "proc":null};
+let conf_x = {"atype":"x", "input":0.1, "duration":3, "proc":null, "data":{}};
+let conf_s = {"atype":"s", "input":0.1, "duration":2, "proc":null, "data":{}};
+let conf_fs = {"atype":"fs", "input":0.15, "marker":0.15,"duration":3, "proc":null, "data":{}};
+
+conf_x.data.cancel = [{"t":0, "cancel":"fs", "duration":-1},
+                 {"t":0, "cancel":"s", "duration":-1}];
+conf_fs.data.cancel = [{"t":0, "cancel":"s", "duration":-1}];
+
+conf_x.data.input = [{"t":0, "input":"fs", "duration":-1},
+                 {"t":0, "input":"s", "duration":-1}];
+conf_fs.data.input = [{"t":0, "input":"s", "duration":-1}];
 
 //let conf = conf_x;
 //conf_x.hit = [
@@ -223,6 +270,11 @@ let s = c.Action(conf_s);
 let fs = c.Action(conf_fs);
 x.tap();
 Timer(function(){
-    s.tap();
+    console.log('fs tap');
+    fs.tap();
 }).on(0.5);
-ctx.run();
+Timer(function(){
+    console.log('s tap');
+    s.tap();
+}).on(1);
+ctx.run(5);

@@ -44,6 +44,7 @@ export class _Timeline {
             if (suc) {
                 this._tlist.splice(headindex,1); } }
         else {
+            console.log('err:', headtiming, this._now);
             throw 'timeline time err';
         }
         return 0;
