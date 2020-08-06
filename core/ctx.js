@@ -1,39 +1,12 @@
-import {_Timeline, _Timer} from './timeline.js';
-import {Event} from './event.js'
-
-let active_ctx = 0;
-export class _Ctx {
-    constructor() {
-        active_ctx = this;
-        this.timeline = new _Timeline();
-        this.Event = Event.init();
-        return;
+// Use Ctx(someclass) to make a context of a class.
+// Call context will new a class with ctx as first arg, and attach ctx to this 
+// instance. Instance created by the same ctx share the same ctx, which can 
+// be used as a static field.
+export function Ctx(_class){
+    var _new = function (...args) {
+        let _instance = new _class(_new, ...args);
+        _instance.ctx = _new;
+        return _instance;
     }
-    on() {
-        active_ctx = this;
-        return this;
-    }
+    return _new;
 }
-new _Ctx();
-
-export function Ctx() {
-    return new _Ctx();
-}
-
-export function Gevent(name) {
-    return active_ctx.Event(name);
-}
-
-export function Timer(cb) {
-    return new _Timer(active_ctx.timeline, cb);
-}
-
-export function now() {
-    return active_ctx.timeline._now;
-}
-
-export function run(t) {
-    return active_ctx.timeline.run(t);
-}
-
-

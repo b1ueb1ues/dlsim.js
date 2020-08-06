@@ -1,66 +1,61 @@
+import {Ctx} from './ctx.js'
 
 export class Event {
-    static init() {
-        let el={};
-        function new_event(name) {
-            return new Event(el, this, name);
+    static init(src) {
+        let c = Ctx(this);
+        c.event_listeners = {};
+        c.src = src;
+        c.to = function(dst) {
+            return Listener.init(dst, c);
         }
-        return new_event;
+        return c;
     }
-    constructor(event_listeners, host, name) {
-        this._el = event_listeners;
+    constructor(ctx, name) {
         this._name = name;
-        this._host = host;
-        if (name in event_listeners) {
-            this._trigger = event_listeners[name]; }
-        else {
-            this._trigger = [];
-            event_listeners[name] = this._trigger;
-        }
+        let el = ctx.event_listeners;
+        if (!el[name])
+            el[name] = [];
+        this._trigger = el[name];
     }
-    set(args) {
-        for (var i in args) {
-            this[i] = args[i];
-        }
+    o(message) {
+        for (var i in this._trigger)
+            this._trigger[i](message);
         return this;
-    }
-    on() {
-        for (var i in this._trigger){
-            this._trigger[i](this);
-        }
-        return this;
-    }
-    listener(callback) {
-        let l = new Listener(this._el, this._name, callback);
-        l.on();
-        return l;
     }
 }
 
-class Listener {
-    constructor(el, name, callback) {
-        this._el = el;
-        this._name = name;
-        this._cb = callback
-        this._online = 0;
+// use event.to is more convinient.
+export class Listener {
+    static init(dst, e_ctx) {
+        let c = Ctx(this);
+        c.dst = dst;
+        c.src = e_ctx.src;
+        c.event_listeners = e_ctx.event_listeners;
+        return c;
     }
-    on() {
-        if (this._online){
+    constructor(ctx, name) {
+        this._cb = ctx.dst['on_'+name].bind(ctx.dst);
+        let el = ctx.event_listeners;
+        if (!el[name])
+            el[name] = [];
+        this._trigger = el[name]; 
+        // inline this.on() {
+        this._trigger.push(this._cb);
+        this._online = 1;
+        // }
+    }
+    o() {
+        if (this._online)
             throw 'err: turn on an online listener';
-        }
-        if (this._name in this._el) {
-            this._el[this._name].push(this._cb); }
-        else {
-            this._el[this._name] = [this._cb]; }
+        this._trigger.push(this._cb);
         this._online = 1;
         return this;
     }
-    off() {
+    x() {
         if (!this._online)  // acceptable
             return 0;
-        let et = this._el[this._name];
-        let idx = et.indexOf(this._cb);
-        et.splice(idx, 1);
+        let idx = this._trigger.indexOf(this._cb);
+        this._trigger.splice(idx, 1);
         this._online = 0;
         return this;
     }
